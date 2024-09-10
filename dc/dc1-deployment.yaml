@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dc1
+  namespace: default
+  labels:
+    app: domain-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: domain-controller
+      dc: dc1
+  template:
+    metadata:
+      labels:
+        app: domain-controller
+        dc: dc1
+    spec:
+      containers:
+      - name: dc1
+        image: mcr.microsoft.com/windows/servercore:ltsc2019
+        command: ["powershell", "-Command", "Install-ADDSDomainController -DomainName example.com"]
+        ports:
+        - containerPort: 389 # LDAP port
+        - containerPort: 636 # LDAP SSL port
+        - containerPort: 53  # DNS
+        volumeMounts:
+        - mountPath: /var/lib/ldap
+          name: dc1-storage
+      volumes:
+      - name: dc1-storage
+        persistentVolumeClaim:
+          claimName: dc1-pvc

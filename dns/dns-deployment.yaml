@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dns-server
+  namespace: default
+  labels:
+    app: dns-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dns-server
+  template:
+    metadata:
+      labels:
+        app: dns-server
+    spec:
+      containers:
+      - name: dns-server
+        image: internetsystemsconsortium/bind9:9.16
+        ports:
+        - containerPort: 53
+        - containerPort: 953 # Control channel
+        volumeMounts:
+        - mountPath: /etc/bind
+          name: dns-storage
+      volumes:
+      - name: dns-storage
+        persistentVolumeClaim:
+          claimName: dns-pvc

@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  namespace: default
+  labels:
+    app: keycloak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      containers:
+      - name: keycloak
+        image: quay.io/keycloak/keycloak:21.0.1
+        env:
+        - name: KEYCLOAK_USER
+          value: admin
+        - name: KEYCLOAK_PASSWORD
+          value: admin
+        - name: DB_VENDOR
+          value: h2
+        - name: KEYCLOAK_IMPORT
+          value: "/config/pki-realm.json"
+        volumeMounts:
+        - mountPath: /config
+          name: keycloak-config
+        - mountPath: /etc/x509/https
+          name: tls-certs
+      volumes:
+      - name: keycloak-config
+        configMap:
+          name: keycloak-config
+      - name: tls-certs
+        secret:
+          secretName: keycloak-tls
